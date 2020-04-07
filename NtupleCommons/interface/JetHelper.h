@@ -8,50 +8,60 @@
 #ifndef NTUPLECOMMONS_INTERFACE_JETHELPER_H_
 #define NTUPLECOMMONS_INTERFACE_JETHELPER_H_
 
+#include "FWCore/Utilities/interface/Exception.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
+
+#include <map>
 
 namespace deepntuples {
 
 class JetHelper {
 public:
   JetHelper() {}
-  JetHelper(const pat::Jet *jet);
+  JetHelper(const pat::Jet *jet, const edm::Handle<reco::CandidateView> &pfcands);
 
   virtual ~JetHelper() {}
 
+  // set genjet (clustered w/ neutrino)
+  void setGenjetWithNu(const reco::GenJetRef &genjetRef) { genjetWithNu_ = (genjetRef.isNull() ? nullptr : &(*genjetRef)); }
+  void setGenjetWithNuSoftDrop(const reco::GenJetRef &genjetRef) { genjetWithNuSoftDrop_ = (genjetRef.isNull() ? nullptr : &(*genjetRef)); }
+  // ------
+
   // return jet constituents (PF candidates)
-  const std::vector<const pat::PackedCandidate*>& getJetConstituents() const { return daughters_; }
+  const std::vector<reco::CandidatePtr>& getJetConstituents() const { return daughters_; }
   unsigned int numberOfDaughters() const { return daughters_.size(); }
+  float getPuppiWeight(const reco::CandidatePtr &cand) const {
+    auto iter = puppi_wgt_cache_.find(cand.key());
+    if (iter == puppi_wgt_cache_.end()){
+      throw cms::Exception("[JetHelper::getPuppiWeight] Cannot get puppi wgt!");
+    }
+    return iter->second;
+  }
 
-  const std::vector<const pat::PackedCandidate*>& getGroomedJetConstituents() const { return daughtersGroomed_; }
-
+  const pat::Jet& jet() const { return *jet_; }
   const std::vector<const pat::Jet*>& getSubJets() const { return subjets_; }
+  const std::vector<const pat::Jet*>& getUncorrSubJets() const { return uncorr_subjets_; }
 
-  // quark/gluon discrimination variables
-  double ptD()   const { return ptD_;          }
-  double axis1() const { return axis1_;        }
-  double axis2() const { return axis2_;        }
-  int    mult()  const { return multiplicity_; }
+  const reco::GenJet* genjetWithNu() const { return genjetWithNu_; }
+  const reco::GenJet* genjetWithNuSoftDrop() const { return genjetWithNuSoftDrop_; }
+
+  std::pair<double, double> getCorrectedPuppiSoftDropMass(const std::vector<const pat::Jet*> &puppisubjets) const; // tmp
 
 
 private:
-  void initializeConstituents();
-  void computeQG(bool useQualityCut = false);
+  void initializeConstituents(const edm::Handle<reco::CandidateView> &pfcands);
 
 
 private:
   // data members
   const pat::Jet *jet_ = nullptr;
+  const reco::GenJet *genjetWithNu_ = nullptr;
+  const reco::GenJet *genjetWithNuSoftDrop_ = nullptr;
   std::vector<const pat::Jet*> subjets_;
-  std::vector<const pat::PackedCandidate*> daughters_;
-  std::vector<const pat::PackedCandidate*> daughtersGroomed_;
-
-  double ptD_ = -1;
-  double axis1_ = -1;
-  double axis2_ = -1;
-  int multiplicity_ = -1;
-
+  std::vector<const pat::Jet*> uncorr_subjets_;
+  std::vector<reco::CandidatePtr> daughters_;
+  std::map<reco::CandidatePtr::key_type, float> puppi_wgt_cache_;
 
 };
 
