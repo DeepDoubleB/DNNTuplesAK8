@@ -6,7 +6,8 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('analysis')
 
 options.outputFile = 'output.root'
-options.inputFiles = '/store/mc/RunIIFall17MiniAODv2/RSGluonToTT_M-3000_TuneCP5_13TeV-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/100000/E0AB2D2B-12B5-E811-8DBA-EC0D9A82260E.root'
+#options.inputFiles = '/store/mc/RunIIFall17MiniAODv2/RSGluonToTT_M-3000_TuneCP5_13TeV-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/100000/E0AB2D2B-12B5-E811-8DBA-EC0D9A82260E.root'
+options.inputFiles = '/store/group/phys_exotica/privateProduction/DR/step3_MINIAODSIM/RunIIFall17/GravitonToHHToWWWW/batch1/v2/GravitonToHHToWWWW/crab_PrivateProduction_Fall17_DR_step3_GravitonToHHToWWWW_batch1_v2/200407_131422/0000/miniaod_11.root'
 options.maxEvents = -1
 
 options.register('skipEvents', 0, VarParsing.multiplicity.singleton, VarParsing.varType.int, "skip N events")
