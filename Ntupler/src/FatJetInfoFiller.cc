@@ -54,6 +54,8 @@ void FatJetInfoFiller::book() {
   data.add<int>("label_H_cc",    0);
   data.add<int>("label_H_qq",    0);
   data.add<int>("label_H_qqqq",  0);
+  data.add<int>("label_H_WW_qqqq",  0);
+  data.add<int>("label_H_WW_lnuqq",  0);
   data.add<int>("label_H_tautau",0);
 
   data.add<int>("label_QCD_bb",  0);
@@ -81,6 +83,8 @@ void FatJetInfoFiller::book() {
   data.add<float>("fj_gen_eta", 0);
   data.add<float>("fj_gen_mass", 0);
   data.add<float>("fj_gen_deltaR", 999);
+  data.add<float>("fj_gen_daughter1_mass", 0);
+  data.add<float>("fj_gen_daughter2_mass", 0);
 
   // --- jet energy/mass regression ---
   data.add<float>("fj_genjet_pt", 0);
@@ -202,8 +206,14 @@ bool FatJetInfoFiller::fill(const pat::Jet& jet, size_t jetidx, const JetHelper&
   }
 
   // ----------------------------------------------------------------
-//  auto fjlabel = fjmatch_.flavorLabel(&jet, *genParticlesHandle, 0.6);
+  //  auto fjlabel = fjmatch_.flavorLabel(&jet, *genParticlesHandle, 0.6);
   auto fjlabel = fjmatch_.flavorLabel(&jet, *genParticlesHandle, jetR_);
+  const reco::GenParticle* matchedParton = 0;
+  if (fjlabel.second.size() >= 1) matchedParton = (fjlabel.second).at(0);
+  const reco::GenParticle* matchedDaughter1 = 0;
+  const reco::GenParticle* matchedDaughter2 = 0;
+  if (fjlabel.second.size() >= 2) matchedDaughter1 = (fjlabel.second).at(1);
+  if (fjlabel.second.size() >= 3) matchedDaughter2 = (fjlabel.second).at(2);
 
   data.fill<int>("fj_label", fjlabel.first);
 
@@ -240,6 +250,27 @@ bool FatJetInfoFiller::fill(const pat::Jet& jet, size_t jetidx, const JetHelper&
   data.fill<int>("label_H_qqqq",  fjlabel.first == FatJetMatching::H_qqqq);
   data.fill<int>("label_H_tautau",fjlabel.first == FatJetMatching::H_tautau);
 
+  data.fill<int>("label_H_WW_qqqq",  
+		 fjlabel.first == FatJetMatching::H_WW_ud_ud 
+		 || fjlabel.first == FatJetMatching::H_WW_ud_cs 
+		 || fjlabel.first == FatJetMatching::H_WW_cs_ud 
+		 || fjlabel.first == FatJetMatching::H_WW_cs_cs
+		 );
+  data.fill<int>("label_H_WW_lnuqq",
+		 fjlabel.first == FatJetMatching::H_WW_ud_enu
+		 || fjlabel.first == FatJetMatching::H_WW_ud_munu 
+		 || fjlabel.first == FatJetMatching::H_WW_ud_taunu 
+		 || fjlabel.first == FatJetMatching::H_WW_cs_enu 
+		 || fjlabel.first == FatJetMatching::H_WW_cs_munu 
+		 || fjlabel.first == FatJetMatching::H_WW_cs_taunu
+		 || fjlabel.first == FatJetMatching::H_WW_enu_ud
+		 || fjlabel.first == FatJetMatching::H_WW_enu_cs
+		 || fjlabel.first == FatJetMatching::H_WW_munu_ud
+		 || fjlabel.first == FatJetMatching::H_WW_munu_cs
+		 || fjlabel.first == FatJetMatching::H_WW_taunu_ud
+		 || fjlabel.first == FatJetMatching::H_WW_taunu_cs
+		 );
+
   data.fill<int>("label_QCD_bb",  fjlabel.first == FatJetMatching::QCD_bb);
   data.fill<int>("label_QCD_cc",  fjlabel.first == FatJetMatching::QCD_cc);
   data.fill<int>("label_QCD_b",   fjlabel.first == FatJetMatching::QCD_b);
@@ -250,11 +281,13 @@ bool FatJetInfoFiller::fill(const pat::Jet& jet, size_t jetidx, const JetHelper&
 
 
   // gen-matched particle (top/W/etc.)
-  data.fill<float>("fj_gen_pt", fjlabel.second ? fjlabel.second->pt() : -999);
-  data.fill<float>("fj_gen_eta", fjlabel.second ? fjlabel.second->eta() : -999);
-  float gen_mass = (fjlabel.first < FatJetMatching::QCD_all && fjlabel.second) ? fjlabel.second->mass() : 0.;
+  data.fill<float>("fj_gen_pt", matchedParton ? matchedParton->pt() : -999);
+  data.fill<float>("fj_gen_eta", matchedParton ? matchedParton->eta() : -999);
+  float gen_mass = ( (fjlabel.first < FatJetMatching::QCD_all || fjlabel.first >= FatJetMatching::H_WW_ud_ud) && matchedParton) ? matchedParton->mass() : 0.;
   data.fill<float>("fj_gen_mass", gen_mass);
-  data.fill<float>("fj_gen_deltaR", fjlabel.second ? reco::deltaR(jet, fjlabel.second->p4()) : 999);
+  data.fill<float>("fj_gen_deltaR", matchedParton ? reco::deltaR(jet, matchedParton->p4()) : 999);
+  data.fill<float>("fj_gen_daughter1_mass", (matchedDaughter1) ? matchedDaughter1->mass() : 0.);
+  data.fill<float>("fj_gen_daughter2_mass", (matchedDaughter2) ? matchedDaughter2->mass() : 0.);
 
   // ----------------------------------
 

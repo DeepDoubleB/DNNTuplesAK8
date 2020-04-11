@@ -49,10 +49,12 @@ public:
   enum FatJetLabel {
     Invalid=0,
     Top_all=10, Top_bcq, Top_bqq, Top_bc, Top_bq, Top_bele, Top_bmu, Top_btau,
-    W_all=20, W_cq, W_qq,
-    Z_all=30, Z_bb, Z_cc, Z_qq,
-    H_all=40, H_bb, H_cc, H_qq, H_qqqq, H_tautau,
-    QCD_all=50, QCD_bb, QCD_cc, QCD_b, QCD_c, QCD_others
+    W_all=20, W_cq, W_qq, W_cb, W_qb, W_ud, W_enu, W_munu, W_taunu,
+    Z_all=30, Z_bb, Z_cc, Z_qq, Z_dd, Z_ee, Z_mumu, Z_tautau, Z_nunu,
+    H_all=40, H_bb, H_cc, H_qq, H_qqqq, H_tautau, 
+    QCD_all=50, QCD_bb, QCD_cc, QCD_b, QCD_c, QCD_others,
+    H_WW_ud_ud = 400, H_WW_ud_cs, H_WW_ud_enu, H_WW_ud_munu, H_WW_ud_taunu, H_WW_cs_ud, H_WW_cs_cs, H_WW_cs_enu, H_WW_cs_munu, H_WW_cs_taunu, H_WW_enu_ud, H_WW_enu_cs, H_WW_enu_enu, H_WW_enu_munu, H_WW_enu_taunu, H_WW_munu_ud, H_WW_munu_cs, H_WW_munu_enu, H_WW_munu_munu, H_WW_munu_taunu, H_WW_taunu_ud, H_WW_taunu_cs,  H_WW_taunu_enu, H_WW_taunu_munu, H_WW_taunu_taunu, 
+    H_ZZ_dd_dd = 500, H_ZZ_dd_cc, H_ZZ_dd_bb, H_ZZ_dd_ee, H_ZZ_dd_mumu, H_ZZ_dd_tautau, H_ZZ_dd_nunu, H_ZZ_cc_dd, H_ZZ_cc_cc, H_ZZ_cc_bb, H_ZZ_cc_ee, H_ZZ_cc_mumu, H_ZZ_cc_tautau, H_ZZ_cc_nunu, H_ZZ_bb_dd, H_ZZ_bb_cc, H_ZZ_bb_bb, H_ZZ_bb_ee, H_ZZ_bb_mumu, H_ZZ_bb_tautau, H_ZZ_bb_nunu, H_ZZ_ee_dd, H_ZZ_ee_cc, H_ZZ_ee_bb, H_ZZ_ee_ee, H_ZZ_ee_mumu, H_ZZ_ee_tautau, H_ZZ_ee_nunu, H_ZZ_mumu_dd, H_ZZ_mumu_cc, H_ZZ_mumu_bb, H_ZZ_mumu_ee, H_ZZ_mumu_mumu, H_ZZ_mumu_tautau, H_ZZ_mumu_nunu, H_ZZ_tautau_dd, H_ZZ_tautau_cc, H_ZZ_tautau_bb, H_ZZ_tautau_ee, H_ZZ_tautau_mumu, H_ZZ_tautau_tautau, H_ZZ_tautau_nunu, H_ZZ_nunu_dd, H_ZZ_nunu_cc, H_ZZ_nunu_bb, H_ZZ_nunu_ee, H_ZZ_nunu_mumu, H_ZZ_nunu_tautau, H_ZZ_nunu_nunu
   };
 
 public:
@@ -61,16 +63,16 @@ public:
 
   virtual ~FatJetMatching() {}
 
-  std::pair<FatJetFlavor, const reco::GenParticle*> flavorJMAR(const pat::Jet *jet, const reco::GenParticleCollection& genParticles, double genRadius = 0.6);
+  std::pair<FatJetFlavor, const reco::GenParticle* > flavorJMAR(const pat::Jet *jet, const reco::GenParticleCollection& genParticles, double genRadius = 0.6);
 
-  std::pair<FatJetLabel, const reco::GenParticle*> flavorLabel(const pat::Jet *jet, const reco::GenParticleCollection& genParticles, double distR);
+  std::pair<FatJetLabel, std::vector<const reco::GenParticle*> > flavorLabel(const pat::Jet *jet, const reco::GenParticleCollection& genParticles, double distR);
 
 private:
-  std::pair<FatJetLabel, const reco::GenParticle*> top_label(const pat::Jet *jet, const reco::GenParticle *parton, double distR);
-  std::pair<FatJetLabel, const reco::GenParticle*> w_label(const pat::Jet *jet, const reco::GenParticle *parton, double distR);
-  std::pair<FatJetLabel, const reco::GenParticle*> z_label(const pat::Jet *jet, const reco::GenParticle *parton, double distR);
-  std::pair<FatJetLabel, const reco::GenParticle*> higgs_label(const pat::Jet *jet, const reco::GenParticle *parton, double distR);
-  std::pair<FatJetLabel, const reco::GenParticle*> qcd_label(const pat::Jet *jet, const reco::GenParticleCollection& genParticles, double distR);
+  std::pair<FatJetLabel, std::vector<const reco::GenParticle*> > top_label(const pat::Jet *jet, const reco::GenParticle *parton, double distR);
+  std::pair<FatJetLabel, std::vector<const reco::GenParticle*> > w_label(const pat::Jet *jet, const reco::GenParticle *parton, double distR);
+  std::pair<FatJetLabel, std::vector<const reco::GenParticle*> > z_label(const pat::Jet *jet, const reco::GenParticle *parton, double distR);
+  std::pair<FatJetLabel, std::vector<const reco::GenParticle*> > higgs_label(const pat::Jet *jet, const reco::GenParticle *parton, double distR);
+  std::pair<FatJetLabel, std::vector<const reco::GenParticle*> > qcd_label(const pat::Jet *jet, const reco::GenParticleCollection& genParticles, double distR);
 
 
 private:
