@@ -296,6 +296,144 @@ std::vector<const reco::GenParticle*> FatJetMatching::getDaughterQuarks(const re
   return daughters;
 }
 
+FatJetMatching::FatJetLabel FatJetMatching::getVLabel(const reco::GenParticle* particle) const {
+  if (particle->pdgId() == ParticleID::p_Z0) {
+    if (abs(particle->daughter(0)->pdgId()) == ParticleID::p_b) return FatJetLabel::Z_bb;
+    else if (abs(particle->daughter(0)->pdgId()) == ParticleID::p_c) return FatJetLabel::Z_cc;
+    else if (abs(particle->daughter(0)->pdgId()) >= ParticleID::p_d && abs(particle->daughter(0)->pdgId()) <= ParticleID::p_s) return FatJetLabel::Z_dd;
+    else if (abs(particle->daughter(0)->pdgId()) == ParticleID::p_eminus) return FatJetLabel::Z_ee;
+    else if (abs(particle->daughter(0)->pdgId()) == ParticleID::p_muminus) return FatJetLabel::Z_mumu;
+    else if (abs(particle->daughter(0)->pdgId()) == ParticleID::p_tauminus) return FatJetLabel::Z_tautau;
+    else if (abs(particle->daughter(0)->pdgId()) == ParticleID::p_nu_e || 
+	     abs(particle->daughter(0)->pdgId()) == ParticleID::p_nu_mu || 
+	     abs(particle->daughter(0)->pdgId()) == ParticleID::p_nu_tau
+	     ) return FatJetLabel::Z_nunu;
+  } else {
+    if ( (abs(particle->daughter(0)->pdgId()) == ParticleID::p_b && abs(particle->daughter(1)->pdgId()) == ParticleID::p_c)
+	 || (abs(particle->daughter(0)->pdgId()) == ParticleID::p_c && abs(particle->daughter(1)->pdgId()) == ParticleID::p_b) ) return FatJetLabel::W_cb;	    
+    else if (abs(particle->daughter(0)->pdgId()) == ParticleID::p_b || abs(particle->daughter(1)->pdgId()) == ParticleID::p_b) return FatJetLabel::W_qb;	    
+    else if (abs(particle->daughter(0)->pdgId()) == ParticleID::p_c || abs(particle->daughter(1)->pdgId()) == ParticleID::p_c) return FatJetLabel::W_cq;	    
+    else if (abs(particle->daughter(0)->pdgId()) >= ParticleID::p_d && abs(particle->daughter(0)->pdgId()) <= ParticleID::p_s) return FatJetLabel::W_ud;	    
+    else if (abs(particle->daughter(0)->pdgId()) == ParticleID::p_eminus || abs(particle->daughter(1)->pdgId()) == ParticleID::p_eminus) return FatJetLabel::W_enu;	    
+    else if (abs(particle->daughter(0)->pdgId()) == ParticleID::p_muminus || abs(particle->daughter(1)->pdgId()) == ParticleID::p_muminus) return FatJetLabel::W_munu;	    
+    else if (abs(particle->daughter(0)->pdgId()) == ParticleID::p_tauminus || abs(particle->daughter(1)->pdgId()) == ParticleID::p_tauminus) return FatJetLabel::W_taunu;	          
+  }
+  return FatJetLabel::Invalid;
+}
+
+FatJetMatching::FatJetLabel FatJetMatching::getHVVLabel(const reco::GenParticle* daughter1, const reco::GenParticle* daughter2) const {
+  FatJetLabel daughter1Label = getVLabel(daughter1);
+  FatJetLabel daughter2Label = getVLabel(daughter2);
+  if (daughter1Label == FatJetLabel::W_ud && daughter2Label == FatJetLabel::W_ud) return FatJetLabel::H_WW_ud_ud;
+  else if ( daughter1Label == FatJetLabel::W_ud 
+	    && ( daughter2Label == FatJetLabel::W_cq || daughter2Label == FatJetLabel::W_cb || daughter2Label == FatJetLabel::W_qb)	      
+	    ) return FatJetLabel::H_WW_ud_cs;
+  else if ( daughter1Label == FatJetLabel::W_ud  &&  daughter2Label == FatJetLabel::W_enu ) 
+    return FatJetLabel::H_WW_ud_enu;
+  else if ( daughter1Label == FatJetLabel::W_ud  &&  daughter2Label == FatJetLabel::W_munu ) 
+    return FatJetLabel::H_WW_ud_munu;
+  else if ( daughter1Label == FatJetLabel::W_ud  &&  daughter2Label == FatJetLabel::W_taunu ) 
+    return FatJetLabel::H_WW_ud_taunu;
+  else if ( ( daughter1Label == FatJetLabel::W_cq || daughter1Label == FatJetLabel::W_cb || daughter1Label == FatJetLabel::W_qb) 
+	    && daughter2Label == FatJetLabel::W_ud 
+	    ) return FatJetLabel::H_WW_cs_ud;
+  else if ( ( daughter1Label == FatJetLabel::W_cq || daughter1Label == FatJetLabel::W_cb || daughter1Label == FatJetLabel::W_qb) 
+	    && ( daughter2Label == FatJetLabel::W_cq || daughter2Label == FatJetLabel::W_cb || daughter2Label == FatJetLabel::W_qb) 
+	    ) return FatJetLabel::H_WW_cs_cs;
+  else if ( ( daughter1Label == FatJetLabel::W_cq || daughter1Label == FatJetLabel::W_cb || daughter1Label == FatJetLabel::W_qb) 
+	    && daughter2Label == FatJetLabel::W_enu 
+	    ) return FatJetLabel::H_WW_cs_enu;
+  else if ( ( daughter1Label == FatJetLabel::W_cq || daughter1Label == FatJetLabel::W_cb || daughter1Label == FatJetLabel::W_qb) 
+	      && daughter2Label == FatJetLabel::W_munu 
+	    ) return FatJetLabel::H_WW_cs_munu;
+  else if ( ( daughter1Label == FatJetLabel::W_cq || daughter1Label == FatJetLabel::W_cb || daughter1Label == FatJetLabel::W_qb) 
+	    && daughter2Label == FatJetLabel::W_taunu 
+	    ) return FatJetLabel::H_WW_cs_taunu;
+  else if ( daughter1Label == FatJetLabel::W_enu && daughter2Label == FatJetLabel::W_ud 
+	    ) return FatJetLabel::H_WW_enu_ud;
+  else if ( daughter1Label == FatJetLabel::W_enu
+	    && ( daughter2Label == FatJetLabel::W_cq || daughter2Label == FatJetLabel::W_cb || daughter2Label == FatJetLabel::W_qb) 
+	    ) return FatJetLabel::H_WW_enu_cs;
+  else if ( daughter1Label == FatJetLabel::W_enu && daughter2Label == FatJetLabel::W_enu 
+	    ) return FatJetLabel::H_WW_enu_enu;
+  else if ( daughter1Label == FatJetLabel::W_enu && daughter2Label == FatJetLabel::W_munu 
+	    ) return FatJetLabel::H_WW_enu_munu;
+  else if ( daughter1Label == FatJetLabel::W_enu && daughter2Label == FatJetLabel::W_taunu 
+	    ) return FatJetLabel::H_WW_enu_taunu;	      
+  else if ( daughter1Label == FatJetLabel::W_munu && daughter2Label == FatJetLabel::W_ud 
+	    ) return FatJetLabel::H_WW_munu_ud;
+  else if ( daughter1Label == FatJetLabel::W_munu
+	    && ( daughter2Label == FatJetLabel::W_cq || daughter2Label == FatJetLabel::W_cb || daughter2Label == FatJetLabel::W_qb) 
+	    ) return FatJetLabel::H_WW_munu_cs;
+  else if ( daughter1Label == FatJetLabel::W_munu && daughter2Label == FatJetLabel::W_enu 
+	    ) return FatJetLabel::H_WW_munu_enu;
+  else if ( daughter1Label == FatJetLabel::W_munu && daughter2Label == FatJetLabel::W_munu 
+	    ) return FatJetLabel::H_WW_munu_munu;
+  else if ( daughter1Label == FatJetLabel::W_munu && daughter2Label == FatJetLabel::W_taunu 
+	    ) return FatJetLabel::H_WW_munu_taunu;	      
+  else if ( daughter1Label == FatJetLabel::W_taunu && daughter2Label == FatJetLabel::W_ud 
+	    ) return FatJetLabel::H_WW_taunu_ud;
+  else if ( daughter1Label == FatJetLabel::W_taunu
+	    && ( daughter2Label == FatJetLabel::W_cq || daughter2Label == FatJetLabel::W_cb || daughter2Label == FatJetLabel::W_qb) 
+	    ) return FatJetLabel::H_WW_taunu_cs;
+  else if ( daughter1Label == FatJetLabel::W_taunu && daughter2Label == FatJetLabel::W_enu 
+	    ) return FatJetLabel::H_WW_taunu_enu;
+  else if ( daughter1Label == FatJetLabel::W_taunu && daughter2Label == FatJetLabel::W_munu 
+	    ) return FatJetLabel::H_WW_taunu_munu;
+  else if ( daughter1Label == FatJetLabel::W_taunu && daughter2Label == FatJetLabel::W_taunu 
+	    ) return FatJetLabel::H_WW_taunu_taunu;
+  else if (daughter1Label == FatJetLabel::Z_dd && daughter2Label == FatJetLabel::Z_dd ) return FatJetLabel::H_ZZ_dd_dd;
+  else if (daughter1Label == FatJetLabel::Z_dd && daughter2Label == FatJetLabel::Z_cc ) return FatJetLabel::H_ZZ_dd_cc;
+  else if (daughter1Label == FatJetLabel::Z_dd && daughter2Label == FatJetLabel::Z_bb ) return FatJetLabel::H_ZZ_dd_bb;
+  else if (daughter1Label == FatJetLabel::Z_dd && daughter2Label == FatJetLabel::Z_ee ) return FatJetLabel::H_ZZ_dd_ee;
+  else if (daughter1Label == FatJetLabel::Z_dd && daughter2Label == FatJetLabel::Z_mumu ) return FatJetLabel::H_ZZ_dd_mumu;
+  else if (daughter1Label == FatJetLabel::Z_dd && daughter2Label == FatJetLabel::Z_tautau ) return FatJetLabel::H_ZZ_dd_tautau;
+  else if (daughter1Label == FatJetLabel::Z_dd && daughter2Label == FatJetLabel::Z_nunu ) return FatJetLabel::H_ZZ_dd_nunu;
+  else if (daughter1Label == FatJetLabel::Z_cc && daughter2Label == FatJetLabel::Z_dd ) return FatJetLabel::H_ZZ_cc_dd;
+  else if (daughter1Label == FatJetLabel::Z_cc && daughter2Label == FatJetLabel::Z_cc ) return FatJetLabel::H_ZZ_cc_cc;
+  else if (daughter1Label == FatJetLabel::Z_cc && daughter2Label == FatJetLabel::Z_bb ) return FatJetLabel::H_ZZ_cc_bb;
+  else if (daughter1Label == FatJetLabel::Z_cc && daughter2Label == FatJetLabel::Z_ee ) return FatJetLabel::H_ZZ_cc_ee;
+  else if (daughter1Label == FatJetLabel::Z_cc && daughter2Label == FatJetLabel::Z_mumu ) return FatJetLabel::H_ZZ_cc_mumu;
+  else if (daughter1Label == FatJetLabel::Z_cc && daughter2Label == FatJetLabel::Z_tautau ) return FatJetLabel::H_ZZ_cc_tautau;
+  else if (daughter1Label == FatJetLabel::Z_cc && daughter2Label == FatJetLabel::Z_nunu ) return FatJetLabel::H_ZZ_cc_nunu;	    
+  else if (daughter1Label == FatJetLabel::Z_bb && daughter2Label == FatJetLabel::Z_dd ) return FatJetLabel::H_ZZ_bb_dd;
+  else if (daughter1Label == FatJetLabel::Z_bb && daughter2Label == FatJetLabel::Z_cc ) return FatJetLabel::H_ZZ_bb_cc;
+  else if (daughter1Label == FatJetLabel::Z_bb && daughter2Label == FatJetLabel::Z_bb ) return FatJetLabel::H_ZZ_bb_bb;
+  else if (daughter1Label == FatJetLabel::Z_bb && daughter2Label == FatJetLabel::Z_ee ) return FatJetLabel::H_ZZ_bb_ee;
+  else if (daughter1Label == FatJetLabel::Z_bb && daughter2Label == FatJetLabel::Z_mumu ) return FatJetLabel::H_ZZ_bb_mumu;
+  else if (daughter1Label == FatJetLabel::Z_bb && daughter2Label == FatJetLabel::Z_tautau ) return FatJetLabel::H_ZZ_bb_tautau;
+  else if (daughter1Label == FatJetLabel::Z_bb && daughter2Label == FatJetLabel::Z_nunu ) return FatJetLabel::H_ZZ_bb_nunu;	     
+  else if (daughter1Label == FatJetLabel::Z_ee && daughter2Label == FatJetLabel::Z_dd ) return FatJetLabel::H_ZZ_ee_dd;
+  else if (daughter1Label == FatJetLabel::Z_ee && daughter2Label == FatJetLabel::Z_cc ) return FatJetLabel::H_ZZ_ee_cc;
+  else if (daughter1Label == FatJetLabel::Z_ee && daughter2Label == FatJetLabel::Z_bb ) return FatJetLabel::H_ZZ_ee_bb;
+  else if (daughter1Label == FatJetLabel::Z_ee && daughter2Label == FatJetLabel::Z_ee ) return FatJetLabel::H_ZZ_ee_ee;
+  else if (daughter1Label == FatJetLabel::Z_ee && daughter2Label == FatJetLabel::Z_mumu ) return FatJetLabel::H_ZZ_ee_mumu;
+  else if (daughter1Label == FatJetLabel::Z_ee && daughter2Label == FatJetLabel::Z_tautau ) return FatJetLabel::H_ZZ_ee_tautau;
+  else if (daughter1Label == FatJetLabel::Z_ee && daughter2Label == FatJetLabel::Z_nunu ) return FatJetLabel::H_ZZ_ee_nunu;	     
+  else if (daughter1Label == FatJetLabel::Z_mumu && daughter2Label == FatJetLabel::Z_dd ) return FatJetLabel::H_ZZ_mumu_dd;
+  else if (daughter1Label == FatJetLabel::Z_mumu && daughter2Label == FatJetLabel::Z_cc ) return FatJetLabel::H_ZZ_mumu_cc;
+  else if (daughter1Label == FatJetLabel::Z_mumu && daughter2Label == FatJetLabel::Z_bb ) return FatJetLabel::H_ZZ_mumu_bb;
+  else if (daughter1Label == FatJetLabel::Z_mumu && daughter2Label == FatJetLabel::Z_ee ) return FatJetLabel::H_ZZ_mumu_ee;
+  else if (daughter1Label == FatJetLabel::Z_mumu && daughter2Label == FatJetLabel::Z_mumu ) return FatJetLabel::H_ZZ_mumu_mumu;
+  else if (daughter1Label == FatJetLabel::Z_mumu && daughter2Label == FatJetLabel::Z_tautau ) return FatJetLabel::H_ZZ_mumu_tautau;
+  else if (daughter1Label == FatJetLabel::Z_mumu && daughter2Label == FatJetLabel::Z_nunu ) return FatJetLabel::H_ZZ_mumu_nunu;	     
+  else if (daughter1Label == FatJetLabel::Z_tautau && daughter2Label == FatJetLabel::Z_dd ) return FatJetLabel::H_ZZ_tautau_dd;
+  else if (daughter1Label == FatJetLabel::Z_tautau && daughter2Label == FatJetLabel::Z_cc ) return FatJetLabel::H_ZZ_tautau_cc;
+  else if (daughter1Label == FatJetLabel::Z_tautau && daughter2Label == FatJetLabel::Z_bb ) return FatJetLabel::H_ZZ_tautau_bb;
+  else if (daughter1Label == FatJetLabel::Z_tautau && daughter2Label == FatJetLabel::Z_ee ) return FatJetLabel::H_ZZ_tautau_ee;
+  else if (daughter1Label == FatJetLabel::Z_tautau && daughter2Label == FatJetLabel::Z_mumu ) return FatJetLabel::H_ZZ_tautau_mumu;
+  else if (daughter1Label == FatJetLabel::Z_tautau && daughter2Label == FatJetLabel::Z_tautau ) return FatJetLabel::H_ZZ_tautau_tautau;
+  else if (daughter1Label == FatJetLabel::Z_tautau && daughter2Label == FatJetLabel::Z_nunu ) return FatJetLabel::H_ZZ_tautau_nunu;	     
+  else if (daughter1Label == FatJetLabel::Z_nunu && daughter2Label == FatJetLabel::Z_dd ) return FatJetLabel::H_ZZ_nunu_dd;
+  else if (daughter1Label == FatJetLabel::Z_nunu && daughter2Label == FatJetLabel::Z_cc ) return FatJetLabel::H_ZZ_nunu_cc;
+  else if (daughter1Label == FatJetLabel::Z_nunu && daughter2Label == FatJetLabel::Z_bb ) return FatJetLabel::H_ZZ_nunu_bb;
+  else if (daughter1Label == FatJetLabel::Z_nunu && daughter2Label == FatJetLabel::Z_ee ) return FatJetLabel::H_ZZ_nunu_ee;
+  else if (daughter1Label == FatJetLabel::Z_nunu && daughter2Label == FatJetLabel::Z_mumu ) return FatJetLabel::H_ZZ_nunu_mumu;
+  else if (daughter1Label == FatJetLabel::Z_nunu && daughter2Label == FatJetLabel::Z_tautau ) return FatJetLabel::H_ZZ_nunu_tautau;
+  else if (daughter1Label == FatJetLabel::Z_nunu && daughter2Label == FatJetLabel::Z_nunu ) return FatJetLabel::H_ZZ_nunu_nunu;
+  return FatJetLabel::Invalid;
+}
+
 std::pair<FatJetMatching::FatJetLabel,std::vector<const reco::GenParticle*> > FatJetMatching::top_label(const pat::Jet* jet, const reco::GenParticle *parton, double distR)
 {
   std::vector<const reco::GenParticle*> resultVector;
@@ -556,8 +694,8 @@ std::pair<FatJetMatching::FatJetLabel,std::vector<const reco::GenParticle*> > Fa
     //For Z's, we preserve the order in which the Z shows up
     const reco::GenParticle* daughter1 = 0; 
     const reco::GenParticle* daughter2 = 0;
-    std::vector<const reco::GenParticle*> hVV_daughter1_granddaughters;
-    std::vector<const reco::GenParticle*> hVV_daughter2_granddaughters;  
+    std::vector<const reco::GenParticle*> hVV_daughters;
+    std::vector<const reco::GenParticle*> hVV_granddaughters;
 
     for (unsigned idau=0; idau<higgs->numberOfDaughters(); ++idau){
       const auto *dau = dynamic_cast<const reco::GenParticle*>(higgs->daughter(idau));
@@ -581,9 +719,10 @@ std::pair<FatJetMatching::FatJetLabel,std::vector<const reco::GenParticle*> > Fa
 	    daughter2 = getFinal(dau);
 	  }
 	}
-
-        //const auto d = getDaughterQuarks(getFinal(dau));
-        //hVV_daus.insert(hVV_daus.end(), d.begin(), d.end());	
+	hVV_daughters.push_back(daughter1);
+	hVV_daughters.push_back(daughter2);
+	const auto d = getDaughterQuarks(getFinal(dau));
+        hVV_daus.insert(hVV_daus.end(), d.begin(), d.end());	
       }
     }
 
@@ -599,174 +738,17 @@ std::pair<FatJetMatching::FatJetLabel,std::vector<const reco::GenParticle*> > Fa
       std::cout << "Warning: Higgs daughter daughters did not come in pairs. Check it.\n";
     }
     
-    
-    FatJetLabel daughter1Label = FatJetLabel::Invalid;
-    if (daughter1->pdgId() == ParticleID::p_Z0) {
-      if (abs(daughter1->daughter(0)->pdgId()) == ParticleID::p_b) daughter1Label = FatJetLabel::Z_bb;
-      else if (abs(daughter1->daughter(0)->pdgId()) == ParticleID::p_c) daughter1Label = FatJetLabel::Z_cc;
-      else if (abs(daughter1->daughter(0)->pdgId()) >= ParticleID::p_d && abs(daughter1->daughter(0)->pdgId()) <= ParticleID::p_s) daughter1Label = FatJetLabel::Z_dd;
-      else if (abs(daughter1->daughter(0)->pdgId()) == ParticleID::p_eminus) daughter1Label = FatJetLabel::Z_ee;
-      else if (abs(daughter1->daughter(0)->pdgId()) == ParticleID::p_muminus) daughter1Label = FatJetLabel::Z_mumu;
-      else if (abs(daughter1->daughter(0)->pdgId()) == ParticleID::p_tauminus) daughter1Label = FatJetLabel::Z_tautau;
-      else if (abs(daughter1->daughter(0)->pdgId()) == ParticleID::p_nu_e || 
-	       abs(daughter1->daughter(0)->pdgId()) == ParticleID::p_nu_mu || 
-	       abs(daughter1->daughter(0)->pdgId()) == ParticleID::p_nu_tau
-	       ) daughter1Label = FatJetLabel::Z_nunu;
-    } else {
-      if ( (abs(daughter1->daughter(0)->pdgId()) == ParticleID::p_b && abs(daughter1->daughter(1)->pdgId()) == ParticleID::p_c)
-	   || (abs(daughter1->daughter(0)->pdgId()) == ParticleID::p_c && abs(daughter1->daughter(1)->pdgId()) == ParticleID::p_b) ) daughter1Label = FatJetLabel::W_cb;	    
-      else if (abs(daughter1->daughter(0)->pdgId()) == ParticleID::p_b || abs(daughter1->daughter(1)->pdgId()) == ParticleID::p_b) daughter1Label = FatJetLabel::W_qb;	    
-      else if (abs(daughter1->daughter(0)->pdgId()) == ParticleID::p_c || abs(daughter1->daughter(1)->pdgId()) == ParticleID::p_c) daughter1Label = FatJetLabel::W_cq;	    
-      else if (abs(daughter1->daughter(0)->pdgId()) >= ParticleID::p_d && abs(daughter1->daughter(0)->pdgId()) <= ParticleID::p_s) daughter1Label = FatJetLabel::W_ud;	    
-      else if (abs(daughter1->daughter(0)->pdgId()) == ParticleID::p_eminus || abs(daughter1->daughter(1)->pdgId()) == ParticleID::p_eminus) daughter1Label = FatJetLabel::W_enu;	    
-      else if (abs(daughter1->daughter(0)->pdgId()) == ParticleID::p_muminus || abs(daughter1->daughter(1)->pdgId()) == ParticleID::p_muminus) daughter1Label = FatJetLabel::W_munu;	    
-      else if (abs(daughter1->daughter(0)->pdgId()) == ParticleID::p_tauminus || abs(daughter1->daughter(1)->pdgId()) == ParticleID::p_tauminus) daughter1Label = FatJetLabel::W_taunu;	          
-    }
-    
+    FatJetLabel eventLabel = getHVVLabel(daughter1, daughter2);
 
-    FatJetLabel daughter2Label = FatJetLabel::Invalid;
-    if (daughter2->pdgId() == ParticleID::p_Z0) {
-      if (abs(daughter2->daughter(0)->pdgId()) == ParticleID::p_b) daughter2Label = FatJetLabel::Z_bb;
-      else if (abs(daughter2->daughter(0)->pdgId()) == ParticleID::p_c) daughter2Label = FatJetLabel::Z_cc;
-      else if (abs(daughter2->daughter(0)->pdgId()) >= ParticleID::p_d && abs(daughter2->daughter(0)->pdgId()) <= ParticleID::p_s) daughter2Label = FatJetLabel::Z_dd;
-      else if (abs(daughter2->daughter(0)->pdgId()) == ParticleID::p_eminus) daughter2Label = FatJetLabel::Z_ee;
-      else if (abs(daughter2->daughter(0)->pdgId()) == ParticleID::p_muminus) daughter2Label = FatJetLabel::Z_mumu;
-      else if (abs(daughter2->daughter(0)->pdgId()) == ParticleID::p_tauminus) daughter2Label = FatJetLabel::Z_tautau;
-      else if (abs(daughter2->daughter(0)->pdgId()) == ParticleID::p_nu_e || 
-	       abs(daughter2->daughter(0)->pdgId()) == ParticleID::p_nu_mu || 
-	       abs(daughter2->daughter(0)->pdgId()) == ParticleID::p_nu_tau
-	       ) daughter2Label = FatJetLabel::Z_nunu;
-    } else {
-      if ( (abs(daughter2->daughter(0)->pdgId()) == ParticleID::p_b && abs(daughter2->daughter(1)->pdgId()) == ParticleID::p_c)
-	   || (abs(daughter2->daughter(0)->pdgId()) == ParticleID::p_c && abs(daughter2->daughter(1)->pdgId()) == ParticleID::p_b) ) daughter2Label = FatJetLabel::W_cb;	    
-      else if (abs(daughter2->daughter(0)->pdgId()) == ParticleID::p_b || abs(daughter2->daughter(1)->pdgId()) == ParticleID::p_b) daughter2Label = FatJetLabel::W_qb;	    
-      else if (abs(daughter2->daughter(0)->pdgId()) == ParticleID::p_c || abs(daughter2->daughter(1)->pdgId()) == ParticleID::p_c) daughter2Label = FatJetLabel::W_cq;	    
-      else if (abs(daughter2->daughter(0)->pdgId()) >= ParticleID::p_d && abs(daughter2->daughter(0)->pdgId()) <= ParticleID::p_s) daughter2Label = FatJetLabel::W_ud;	    
-      else if (abs(daughter2->daughter(0)->pdgId()) == ParticleID::p_eminus || abs(daughter2->daughter(1)->pdgId()) == ParticleID::p_eminus) daughter2Label = FatJetLabel::W_enu;	    
-      else if (abs(daughter2->daughter(0)->pdgId()) == ParticleID::p_muminus || abs(daughter2->daughter(1)->pdgId()) == ParticleID::p_muminus) daughter2Label = FatJetLabel::W_munu;	    
-      else if (abs(daughter2->daughter(0)->pdgId()) == ParticleID::p_tauminus || abs(daughter2->daughter(1)->pdgId()) == ParticleID::p_tauminus) daughter2Label = FatJetLabel::W_taunu;	          
-    }
- 
-
-    hVV_daughter1_granddaughters.push_back((const reco::GenParticle*)daughter1->daughter(0));
-    hVV_daughter1_granddaughters.push_back((const reco::GenParticle*)daughter1->daughter(1));
-    hVV_daughter2_granddaughters.push_back((const reco::GenParticle*)daughter2->daughter(0));
-    hVV_daughter2_granddaughters.push_back((const reco::GenParticle*)daughter2->daughter(1));
+    hVV_granddaughters.push_back((const reco::GenParticle*)daughter1->daughter(0));
+    hVV_granddaughters.push_back((const reco::GenParticle*)daughter1->daughter(1));
+    hVV_granddaughters.push_back((const reco::GenParticle*)daughter2->daughter(0));
+    hVV_granddaughters.push_back((const reco::GenParticle*)daughter2->daughter(1));
     double drHiggs    = reco::deltaR(jet->p4(), higgs->p4());
     double dr_d1_d1    = reco::deltaR(jet->p4(), daughter1->daughter(0)->p4());
     double dr_d1_d2    = reco::deltaR(jet->p4(), daughter1->daughter(1)->p4());
     double dr_d2_d1    = reco::deltaR(jet->p4(), daughter2->daughter(0)->p4());
     double dr_d2_d2    = reco::deltaR(jet->p4(), daughter2->daughter(1)->p4());
-
-    FatJetLabel eventLabel = FatJetLabel::Invalid;
-    if (daughter1Label == FatJetLabel::W_ud && daughter2Label == FatJetLabel::W_ud) eventLabel = FatJetLabel::H_WW_ud_ud;
-    else if ( daughter1Label == FatJetLabel::W_ud 
-	      && ( daughter2Label == FatJetLabel::W_cq || daughter2Label == FatJetLabel::W_cb || daughter2Label == FatJetLabel::W_qb)	      
-	      ) eventLabel = FatJetLabel::H_WW_ud_cs;
-    else if ( daughter1Label == FatJetLabel::W_ud  &&  daughter2Label == FatJetLabel::W_enu ) 
-      eventLabel = FatJetLabel::H_WW_ud_enu;
-    else if ( daughter1Label == FatJetLabel::W_ud  &&  daughter2Label == FatJetLabel::W_munu ) 
-      eventLabel = FatJetLabel::H_WW_ud_munu;
-    else if ( daughter1Label == FatJetLabel::W_ud  &&  daughter2Label == FatJetLabel::W_taunu ) 
-      eventLabel = FatJetLabel::H_WW_ud_taunu;
-    else if ( ( daughter1Label == FatJetLabel::W_cq || daughter1Label == FatJetLabel::W_cb || daughter1Label == FatJetLabel::W_qb) 
-	      && daughter2Label == FatJetLabel::W_ud 
-	      ) eventLabel = FatJetLabel::H_WW_cs_ud;
-    else if ( ( daughter1Label == FatJetLabel::W_cq || daughter1Label == FatJetLabel::W_cb || daughter1Label == FatJetLabel::W_qb) 
-	      && ( daughter2Label == FatJetLabel::W_cq || daughter2Label == FatJetLabel::W_cb || daughter2Label == FatJetLabel::W_qb) 
-	      ) eventLabel = FatJetLabel::H_WW_cs_cs;
-    else if ( ( daughter1Label == FatJetLabel::W_cq || daughter1Label == FatJetLabel::W_cb || daughter1Label == FatJetLabel::W_qb) 
-	      && daughter2Label == FatJetLabel::W_enu 
-	      ) eventLabel = FatJetLabel::H_WW_cs_enu;
-    else if ( ( daughter1Label == FatJetLabel::W_cq || daughter1Label == FatJetLabel::W_cb || daughter1Label == FatJetLabel::W_qb) 
-	      && daughter2Label == FatJetLabel::W_munu 
-	      ) eventLabel = FatJetLabel::H_WW_cs_munu;
-    else if ( ( daughter1Label == FatJetLabel::W_cq || daughter1Label == FatJetLabel::W_cb || daughter1Label == FatJetLabel::W_qb) 
-	      && daughter2Label == FatJetLabel::W_taunu 
-	      ) eventLabel = FatJetLabel::H_WW_cs_taunu;
-    else if ( daughter1Label == FatJetLabel::W_enu && daughter2Label == FatJetLabel::W_ud 
-	      ) eventLabel = FatJetLabel::H_WW_enu_ud;
-    else if ( daughter1Label == FatJetLabel::W_enu
-	      && ( daughter2Label == FatJetLabel::W_cq || daughter2Label == FatJetLabel::W_cb || daughter2Label == FatJetLabel::W_qb) 
-	      ) eventLabel = FatJetLabel::H_WW_enu_cs;
-    else if ( daughter1Label == FatJetLabel::W_enu && daughter2Label == FatJetLabel::W_enu 
-	      ) eventLabel = FatJetLabel::H_WW_enu_enu;
-    else if ( daughter1Label == FatJetLabel::W_enu && daughter2Label == FatJetLabel::W_munu 
-	      ) eventLabel = FatJetLabel::H_WW_enu_munu;
-    else if ( daughter1Label == FatJetLabel::W_enu && daughter2Label == FatJetLabel::W_taunu 
-	      ) eventLabel = FatJetLabel::H_WW_enu_taunu;	      
-    else if ( daughter1Label == FatJetLabel::W_munu && daughter2Label == FatJetLabel::W_ud 
-	      ) eventLabel = FatJetLabel::H_WW_munu_ud;
-    else if ( daughter1Label == FatJetLabel::W_munu
-	      && ( daughter2Label == FatJetLabel::W_cq || daughter2Label == FatJetLabel::W_cb || daughter2Label == FatJetLabel::W_qb) 
-	      ) eventLabel = FatJetLabel::H_WW_munu_cs;
-    else if ( daughter1Label == FatJetLabel::W_munu && daughter2Label == FatJetLabel::W_enu 
-	      ) eventLabel = FatJetLabel::H_WW_munu_enu;
-    else if ( daughter1Label == FatJetLabel::W_munu && daughter2Label == FatJetLabel::W_munu 
-	      ) eventLabel = FatJetLabel::H_WW_munu_munu;
-    else if ( daughter1Label == FatJetLabel::W_munu && daughter2Label == FatJetLabel::W_taunu 
-	      ) eventLabel = FatJetLabel::H_WW_munu_taunu;	      
-    else if ( daughter1Label == FatJetLabel::W_taunu && daughter2Label == FatJetLabel::W_ud 
-	      ) eventLabel = FatJetLabel::H_WW_taunu_ud;
-    else if ( daughter1Label == FatJetLabel::W_taunu
-	      && ( daughter2Label == FatJetLabel::W_cq || daughter2Label == FatJetLabel::W_cb || daughter2Label == FatJetLabel::W_qb) 
-	      ) eventLabel = FatJetLabel::H_WW_taunu_cs;
-    else if ( daughter1Label == FatJetLabel::W_taunu && daughter2Label == FatJetLabel::W_enu 
-	      ) eventLabel = FatJetLabel::H_WW_taunu_enu;
-    else if ( daughter1Label == FatJetLabel::W_taunu && daughter2Label == FatJetLabel::W_munu 
-	      ) eventLabel = FatJetLabel::H_WW_taunu_munu;
-    else if ( daughter1Label == FatJetLabel::W_taunu && daughter2Label == FatJetLabel::W_taunu 
-	      ) eventLabel = FatJetLabel::H_WW_taunu_taunu;
-    else if (daughter1Label == FatJetLabel::Z_dd && daughter2Label == FatJetLabel::Z_dd ) eventLabel = FatJetLabel::H_ZZ_dd_dd;
-    else if (daughter1Label == FatJetLabel::Z_dd && daughter2Label == FatJetLabel::Z_cc ) eventLabel = FatJetLabel::H_ZZ_dd_cc;
-    else if (daughter1Label == FatJetLabel::Z_dd && daughter2Label == FatJetLabel::Z_bb ) eventLabel = FatJetLabel::H_ZZ_dd_bb;
-    else if (daughter1Label == FatJetLabel::Z_dd && daughter2Label == FatJetLabel::Z_ee ) eventLabel = FatJetLabel::H_ZZ_dd_ee;
-    else if (daughter1Label == FatJetLabel::Z_dd && daughter2Label == FatJetLabel::Z_mumu ) eventLabel = FatJetLabel::H_ZZ_dd_mumu;
-    else if (daughter1Label == FatJetLabel::Z_dd && daughter2Label == FatJetLabel::Z_tautau ) eventLabel = FatJetLabel::H_ZZ_dd_tautau;
-    else if (daughter1Label == FatJetLabel::Z_dd && daughter2Label == FatJetLabel::Z_nunu ) eventLabel = FatJetLabel::H_ZZ_dd_nunu;
-    else if (daughter1Label == FatJetLabel::Z_cc && daughter2Label == FatJetLabel::Z_dd ) eventLabel = FatJetLabel::H_ZZ_cc_dd;
-    else if (daughter1Label == FatJetLabel::Z_cc && daughter2Label == FatJetLabel::Z_cc ) eventLabel = FatJetLabel::H_ZZ_cc_cc;
-    else if (daughter1Label == FatJetLabel::Z_cc && daughter2Label == FatJetLabel::Z_bb ) eventLabel = FatJetLabel::H_ZZ_cc_bb;
-    else if (daughter1Label == FatJetLabel::Z_cc && daughter2Label == FatJetLabel::Z_ee ) eventLabel = FatJetLabel::H_ZZ_cc_ee;
-    else if (daughter1Label == FatJetLabel::Z_cc && daughter2Label == FatJetLabel::Z_mumu ) eventLabel = FatJetLabel::H_ZZ_cc_mumu;
-    else if (daughter1Label == FatJetLabel::Z_cc && daughter2Label == FatJetLabel::Z_tautau ) eventLabel = FatJetLabel::H_ZZ_cc_tautau;
-    else if (daughter1Label == FatJetLabel::Z_cc && daughter2Label == FatJetLabel::Z_nunu ) eventLabel = FatJetLabel::H_ZZ_cc_nunu;	    
-    else if (daughter1Label == FatJetLabel::Z_bb && daughter2Label == FatJetLabel::Z_dd ) eventLabel = FatJetLabel::H_ZZ_bb_dd;
-    else if (daughter1Label == FatJetLabel::Z_bb && daughter2Label == FatJetLabel::Z_cc ) eventLabel = FatJetLabel::H_ZZ_bb_cc;
-    else if (daughter1Label == FatJetLabel::Z_bb && daughter2Label == FatJetLabel::Z_bb ) eventLabel = FatJetLabel::H_ZZ_bb_bb;
-    else if (daughter1Label == FatJetLabel::Z_bb && daughter2Label == FatJetLabel::Z_ee ) eventLabel = FatJetLabel::H_ZZ_bb_ee;
-    else if (daughter1Label == FatJetLabel::Z_bb && daughter2Label == FatJetLabel::Z_mumu ) eventLabel = FatJetLabel::H_ZZ_bb_mumu;
-    else if (daughter1Label == FatJetLabel::Z_bb && daughter2Label == FatJetLabel::Z_tautau ) eventLabel = FatJetLabel::H_ZZ_bb_tautau;
-    else if (daughter1Label == FatJetLabel::Z_bb && daughter2Label == FatJetLabel::Z_nunu ) eventLabel = FatJetLabel::H_ZZ_bb_nunu;	     
-    else if (daughter1Label == FatJetLabel::Z_ee && daughter2Label == FatJetLabel::Z_dd ) eventLabel = FatJetLabel::H_ZZ_ee_dd;
-    else if (daughter1Label == FatJetLabel::Z_ee && daughter2Label == FatJetLabel::Z_cc ) eventLabel = FatJetLabel::H_ZZ_ee_cc;
-    else if (daughter1Label == FatJetLabel::Z_ee && daughter2Label == FatJetLabel::Z_bb ) eventLabel = FatJetLabel::H_ZZ_ee_bb;
-    else if (daughter1Label == FatJetLabel::Z_ee && daughter2Label == FatJetLabel::Z_ee ) eventLabel = FatJetLabel::H_ZZ_ee_ee;
-    else if (daughter1Label == FatJetLabel::Z_ee && daughter2Label == FatJetLabel::Z_mumu ) eventLabel = FatJetLabel::H_ZZ_ee_mumu;
-    else if (daughter1Label == FatJetLabel::Z_ee && daughter2Label == FatJetLabel::Z_tautau ) eventLabel = FatJetLabel::H_ZZ_ee_tautau;
-    else if (daughter1Label == FatJetLabel::Z_ee && daughter2Label == FatJetLabel::Z_nunu ) eventLabel = FatJetLabel::H_ZZ_ee_nunu;	     
-    else if (daughter1Label == FatJetLabel::Z_mumu && daughter2Label == FatJetLabel::Z_dd ) eventLabel = FatJetLabel::H_ZZ_mumu_dd;
-    else if (daughter1Label == FatJetLabel::Z_mumu && daughter2Label == FatJetLabel::Z_cc ) eventLabel = FatJetLabel::H_ZZ_mumu_cc;
-    else if (daughter1Label == FatJetLabel::Z_mumu && daughter2Label == FatJetLabel::Z_bb ) eventLabel = FatJetLabel::H_ZZ_mumu_bb;
-    else if (daughter1Label == FatJetLabel::Z_mumu && daughter2Label == FatJetLabel::Z_ee ) eventLabel = FatJetLabel::H_ZZ_mumu_ee;
-    else if (daughter1Label == FatJetLabel::Z_mumu && daughter2Label == FatJetLabel::Z_mumu ) eventLabel = FatJetLabel::H_ZZ_mumu_mumu;
-    else if (daughter1Label == FatJetLabel::Z_mumu && daughter2Label == FatJetLabel::Z_tautau ) eventLabel = FatJetLabel::H_ZZ_mumu_tautau;
-    else if (daughter1Label == FatJetLabel::Z_mumu && daughter2Label == FatJetLabel::Z_nunu ) eventLabel = FatJetLabel::H_ZZ_mumu_nunu;	     
-    else if (daughter1Label == FatJetLabel::Z_tautau && daughter2Label == FatJetLabel::Z_dd ) eventLabel = FatJetLabel::H_ZZ_tautau_dd;
-    else if (daughter1Label == FatJetLabel::Z_tautau && daughter2Label == FatJetLabel::Z_cc ) eventLabel = FatJetLabel::H_ZZ_tautau_cc;
-    else if (daughter1Label == FatJetLabel::Z_tautau && daughter2Label == FatJetLabel::Z_bb ) eventLabel = FatJetLabel::H_ZZ_tautau_bb;
-    else if (daughter1Label == FatJetLabel::Z_tautau && daughter2Label == FatJetLabel::Z_ee ) eventLabel = FatJetLabel::H_ZZ_tautau_ee;
-    else if (daughter1Label == FatJetLabel::Z_tautau && daughter2Label == FatJetLabel::Z_mumu ) eventLabel = FatJetLabel::H_ZZ_tautau_mumu;
-    else if (daughter1Label == FatJetLabel::Z_tautau && daughter2Label == FatJetLabel::Z_tautau ) eventLabel = FatJetLabel::H_ZZ_tautau_tautau;
-    else if (daughter1Label == FatJetLabel::Z_tautau && daughter2Label == FatJetLabel::Z_nunu ) eventLabel = FatJetLabel::H_ZZ_tautau_nunu;	     
-    else if (daughter1Label == FatJetLabel::Z_nunu && daughter2Label == FatJetLabel::Z_dd ) eventLabel = FatJetLabel::H_ZZ_nunu_dd;
-    else if (daughter1Label == FatJetLabel::Z_nunu && daughter2Label == FatJetLabel::Z_cc ) eventLabel = FatJetLabel::H_ZZ_nunu_cc;
-    else if (daughter1Label == FatJetLabel::Z_nunu && daughter2Label == FatJetLabel::Z_bb ) eventLabel = FatJetLabel::H_ZZ_nunu_bb;
-    else if (daughter1Label == FatJetLabel::Z_nunu && daughter2Label == FatJetLabel::Z_ee ) eventLabel = FatJetLabel::H_ZZ_nunu_ee;
-    else if (daughter1Label == FatJetLabel::Z_nunu && daughter2Label == FatJetLabel::Z_mumu ) eventLabel = FatJetLabel::H_ZZ_nunu_mumu;
-    else if (daughter1Label == FatJetLabel::Z_nunu && daughter2Label == FatJetLabel::Z_tautau ) eventLabel = FatJetLabel::H_ZZ_nunu_tautau;
-    else if (daughter1Label == FatJetLabel::Z_nunu && daughter2Label == FatJetLabel::Z_nunu ) eventLabel = FatJetLabel::H_ZZ_nunu_nunu;
-	     
 
 
     if (debug_){
@@ -775,14 +757,9 @@ std::pair<FatJetMatching::FatJetLabel,std::vector<const reco::GenParticle*> > Fa
       printGenParticleInfo(higgs, -1);
       printGenParticleInfo(daughter1, -1);
       printGenParticleInfo(daughter2, -1);
-      for (const auto * gp : hVV_daughter1_granddaughters){      
+      for (const auto * gp : hVV_granddaughters){      
 	printGenParticleInfo(gp, -1);	 
       }
-      for (const auto * gp : hVV_daughter2_granddaughters){      
-	printGenParticleInfo(gp, -1);	 
-      }
-      std::cout << "Daughter1 Label: " << daughter1Label << "\n";
-      std::cout << "Daughter2 Label: " << daughter2Label << "\n";
       std::cout << "Event Label: " << eventLabel << "\n";
       std::cout << "\n\n";
     }
@@ -809,14 +786,9 @@ std::pair<FatJetMatching::FatJetLabel,std::vector<const reco::GenParticle*> > Fa
 	  printGenParticleInfo(higgs, -1);
 	  printGenParticleInfo(daughter1, -1);
 	  printGenParticleInfo(daughter2, -1);
-	  for (const auto * gp : hVV_daughter1_granddaughters){      
+	  for (const auto * gp : hVV_granddaughters){      
 	    printGenParticleInfo(gp, -1);	 
 	  }
-	  for (const auto * gp : hVV_daughter2_granddaughters){      
-	    printGenParticleInfo(gp, -1);	 
-	  }
-	  std::cout << "Daughter1 Label: " << daughter1Label << "\n";
-	  std::cout << "Daughter2 Label: " << daughter2Label << "\n";
 	  std::cout << "Event Label: " << eventLabel << "\n";
 	}
       }
@@ -825,14 +797,9 @@ std::pair<FatJetMatching::FatJetLabel,std::vector<const reco::GenParticle*> > Fa
       printGenParticleInfo(higgs, -1);
       printGenParticleInfo(daughter1, -1);
       printGenParticleInfo(daughter2, -1);
-      for (const auto * gp : hVV_daughter1_granddaughters){      
+      for (const auto * gp : hVV_granddaughters){      
 	printGenParticleInfo(gp, -1);	 
       }
-      for (const auto * gp : hVV_daughter2_granddaughters){      
-	printGenParticleInfo(gp, -1);	 
-      }
-      std::cout << "Daughter1 Label: " << daughter1Label << "\n";
-      std::cout << "Daughter2 Label: " << daughter2Label << "\n";
       std::cout << "Event Label: " << eventLabel << "\n";
       std::cout << "\n\n";
     }     
@@ -956,3 +923,5 @@ std::pair<FatJetMatching::FatJetLabel,std::vector<const reco::GenParticle*> > Fa
 
   return std::make_pair(FatJetLabel::QCD_others, resultVector);
 }
+
+
