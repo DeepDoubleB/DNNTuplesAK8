@@ -247,7 +247,22 @@ bool FatJetInfoFiller::fill(const pat::Jet& jet, size_t jetidx, const JetHelper&
   data.fill<int>("label_H_bb",    fjlabel.first == FatJetMatching::H_bb);
   data.fill<int>("label_H_cc",    fjlabel.first == FatJetMatching::H_cc);
   data.fill<int>("label_H_qq",    fjlabel.first == FatJetMatching::H_qq);
-  data.fill<int>("label_H_qqqq",  fjlabel.first == FatJetMatching::H_qqqq);
+  data.fill<int>("label_H_qqqq",  
+		 fjlabel.first == FatJetMatching::H_WW_ud_ud
+                 || fjlabel.first == FatJetMatching::H_WW_ud_cs
+                 || fjlabel.first == FatJetMatching::H_WW_cs_ud
+                 || fjlabel.first == FatJetMatching::H_WW_cs_cs
+		 || fjlabel.first == FatJetMatching::H_ZZ_dd_dd
+		 || fjlabel.first == FatJetMatching::H_ZZ_dd_cc
+		 || fjlabel.first == FatJetMatching::H_ZZ_dd_bb
+		 || fjlabel.first == FatJetMatching::H_ZZ_cc_dd
+		 || fjlabel.first == FatJetMatching::H_ZZ_cc_cc
+		 || fjlabel.first == FatJetMatching::H_ZZ_cc_bb
+		 || fjlabel.first == FatJetMatching::H_ZZ_bb_dd
+		 || fjlabel.first == FatJetMatching::H_ZZ_bb_cc
+		 || fjlabel.first == FatJetMatching::H_ZZ_bb_bb
+
+                 );
   data.fill<int>("label_H_tautau",fjlabel.first == FatJetMatching::H_tautau);
 
   data.fill<int>("label_H_WW_qqqq",  
@@ -283,7 +298,7 @@ bool FatJetInfoFiller::fill(const pat::Jet& jet, size_t jetidx, const JetHelper&
   // gen-matched particle (top/W/etc.)
   data.fill<float>("fj_gen_pt", matchedParton ? matchedParton->pt() : -999);
   data.fill<float>("fj_gen_eta", matchedParton ? matchedParton->eta() : -999);
-  float gen_mass = ( (fjlabel.first < FatJetMatching::QCD_all || fjlabel.first >= FatJetMatching::H_WW_ud_ud) && matchedParton) ? matchedParton->mass() : 0.;
+  float gen_mass = ( (fjlabel.first < FatJetMatching::QCD_all) && matchedParton) ? matchedParton->mass() : 0.;
   data.fill<float>("fj_gen_mass", gen_mass);
   data.fill<float>("fj_gen_deltaR", matchedParton ? reco::deltaR(jet, matchedParton->p4()) : 999);
   data.fill<float>("fj_gen_daughter1_mass", (matchedDaughter1) ? matchedDaughter1->mass() : 0.);
