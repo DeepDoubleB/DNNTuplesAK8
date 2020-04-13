@@ -54,9 +54,17 @@ void FatJetInfoFiller::book() {
   data.add<int>("label_H_cc",    0);
   data.add<int>("label_H_qq",    0);
   data.add<int>("label_H_qqqq",  0);
+  data.add<int>("label_H_tautau",0);
+
   data.add<int>("label_H_WW_qqqq",  0);
   data.add<int>("label_H_WW_lnuqq",  0);
-  data.add<int>("label_H_tautau",0);
+  data.add<int>("label_H_WW_lnulnu",  0);
+  data.add<int>("label_H_ZZ_qqqq",  0);
+  data.add<int>("label_H_ZZ_qqll",  0);
+  data.add<int>("label_H_ZZ_llll",  0);
+  data.add<int>("label_H_ZZ_qqnunu",  0);
+  data.add<int>("label_H_ZZ_llnunu",  0);
+  data.add<int>("label_H_ZZ_nunununu",  0);
 
   data.add<int>("label_QCD_bb",  0);
   data.add<int>("label_QCD_cc",  0);
@@ -247,44 +255,19 @@ bool FatJetInfoFiller::fill(const pat::Jet& jet, size_t jetidx, const JetHelper&
   data.fill<int>("label_H_bb",    fjlabel.first == FatJetMatching::H_bb);
   data.fill<int>("label_H_cc",    fjlabel.first == FatJetMatching::H_cc);
   data.fill<int>("label_H_qq",    fjlabel.first == FatJetMatching::H_qq);
-  data.fill<int>("label_H_qqqq",  
-		 fjlabel.first == FatJetMatching::H_WW_ud_ud
-                 || fjlabel.first == FatJetMatching::H_WW_ud_cs
-                 || fjlabel.first == FatJetMatching::H_WW_cs_ud
-                 || fjlabel.first == FatJetMatching::H_WW_cs_cs
-		 || fjlabel.first == FatJetMatching::H_ZZ_dd_dd
-		 || fjlabel.first == FatJetMatching::H_ZZ_dd_cc
-		 || fjlabel.first == FatJetMatching::H_ZZ_dd_bb
-		 || fjlabel.first == FatJetMatching::H_ZZ_cc_dd
-		 || fjlabel.first == FatJetMatching::H_ZZ_cc_cc
-		 || fjlabel.first == FatJetMatching::H_ZZ_cc_bb
-		 || fjlabel.first == FatJetMatching::H_ZZ_bb_dd
-		 || fjlabel.first == FatJetMatching::H_ZZ_bb_cc
-		 || fjlabel.first == FatJetMatching::H_ZZ_bb_bb
-
-                 );
+  data.fill<int>("label_H_qqqq",  (fjlabel.first >= FatJetMatching::H_WW_ud_ud && fjlabel.first <= FatJetMatching::H_WW_cs_cs) || (fjlabel.first >= FatJetMatching::H_ZZ_dd_dd && fjlabel.first <= FatJetMatching::H_ZZ_bb_bb));
   data.fill<int>("label_H_tautau",fjlabel.first == FatJetMatching::H_tautau);
 
-  data.fill<int>("label_H_WW_qqqq",  
-		 fjlabel.first == FatJetMatching::H_WW_ud_ud 
-		 || fjlabel.first == FatJetMatching::H_WW_ud_cs 
-		 || fjlabel.first == FatJetMatching::H_WW_cs_ud 
-		 || fjlabel.first == FatJetMatching::H_WW_cs_cs
-		 );
-  data.fill<int>("label_H_WW_lnuqq",
-		 fjlabel.first == FatJetMatching::H_WW_ud_enu
-		 || fjlabel.first == FatJetMatching::H_WW_ud_munu 
-		 || fjlabel.first == FatJetMatching::H_WW_ud_taunu 
-		 || fjlabel.first == FatJetMatching::H_WW_cs_enu 
-		 || fjlabel.first == FatJetMatching::H_WW_cs_munu 
-		 || fjlabel.first == FatJetMatching::H_WW_cs_taunu
-		 || fjlabel.first == FatJetMatching::H_WW_enu_ud
-		 || fjlabel.first == FatJetMatching::H_WW_enu_cs
-		 || fjlabel.first == FatJetMatching::H_WW_munu_ud
-		 || fjlabel.first == FatJetMatching::H_WW_munu_cs
-		 || fjlabel.first == FatJetMatching::H_WW_taunu_ud
-		 || fjlabel.first == FatJetMatching::H_WW_taunu_cs
-		 );
+  data.fill<int>("label_H_WW_qqqq", fjlabel.first >= FatJetMatching::H_WW_ud_ud && fjlabel.first <= FatJetMatching::H_WW_cs_cs);
+  data.fill<int>("label_H_WW_lnuqq", fjlabel.first >= FatJetMatching::H_WW_ud_enu && fjlabel.first <= FatJetMatching::H_WW_taunu_cs);
+  data.fill<int>("label_H_WW_lnulnu", fjlabel.first >= FatJetMatching::H_WW_enu_enu && fjlabel.first <= FatJetMatching::H_WW_taunu_taunu);
+
+  data.fill<int>("label_H_ZZ_qqqq", fjlabel.first >= FatJetMatching::H_ZZ_dd_dd && fjlabel.first <= FatJetMatching::H_ZZ_bb_bb);
+  data.fill<int>("label_H_ZZ_qqll", fjlabel.first >= FatJetMatching::H_ZZ_dd_ee && fjlabel.first <= FatJetMatching::H_ZZ_tautau_bb);
+  data.fill<int>("label_H_ZZ_llll", fjlabel.first >= FatJetMatching::H_ZZ_ee_ee && fjlabel.first <= FatJetMatching::H_ZZ_tautau_tautau);
+  data.fill<int>("label_H_ZZ_qqnunu", fjlabel.first >= FatJetMatching::H_ZZ_dd_nunu && fjlabel.first <= FatJetMatching::H_ZZ_nunu_bb);
+  data.fill<int>("label_H_ZZ_llnunu", fjlabel.first >= FatJetMatching::H_ZZ_ee_nunu && fjlabel.first <= FatJetMatching::H_ZZ_nunu_tautau);
+  data.fill<int>("label_H_ZZ_nunununu", fjlabel.first == FatJetMatching::H_ZZ_nunu_nunu);
 
   data.fill<int>("label_QCD_bb",  fjlabel.first == FatJetMatching::QCD_bb);
   data.fill<int>("label_QCD_cc",  fjlabel.first == FatJetMatching::QCD_cc);
