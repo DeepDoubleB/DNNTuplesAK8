@@ -13,9 +13,9 @@
 namespace deepntuples {
 
 void JetInfoFillerAK8::readConfig(const edm::ParameterSet& iConfig, edm::ConsumesCollector && cc) {
-  minPt_ = iConfig.getUntrackedParameter<double>("jetPtMin", 150);
+  minPt_ = iConfig.getUntrackedParameter<double>("jetPtMin", 50);
   maxPt_ = iConfig.getUntrackedParameter<double>("jetPtMax", -1);
-  maxAbsEta_ = iConfig.getUntrackedParameter<double>("jetAbsEtaMax", 2.4);
+  maxAbsEta_ = iConfig.getUntrackedParameter<double>("jetAbsEtaMax", 3);
   btag_discriminators_ = iConfig.getParameter<std::vector<std::string>>("bDiscriminators");
 
   vtxToken_ = cc.consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"));

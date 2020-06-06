@@ -6,6 +6,7 @@
  */
 
 #include "DeepNTuples/NtupleAK8/interface/PFCandidateFiller.h"
+#include "DeepNTuples/NtupleCommons/interface/sorting_modules.h"
 
 namespace deepntuples {
 
@@ -60,16 +61,51 @@ void PFCandidateFiller::book() {
 
 bool PFCandidateFiller::fill(const pat::Jet& jet, size_t jetidx, const JetHelper& jet_helper) {
 
-  const auto& jetConstituents = jet_helper.getJetConstituents();
+  std::vector<const pat::PackedCandidate*> neutralPFCands;
+  std::unordered_map<const pat::PackedCandidate*, double> drMinSvMap;
+  //std::unordered_map<const pat::PackedCandidate*, double> ptRelMap;
 
-  int nConstituents = 0;
+  std::vector<sorting::sortingClass<size_t>> sortedneutral;
+
+  const float jet_uncorr_pt=jet.correctedJet("Uncorrected").pt();
+
+  unsigned int i = 0;
+  for (const auto * pfcand : jet_helper.getJetConstituents()){
+    if (!pfcand) continue;
+    if (pfcand->pt() < minPt_) continue;
+    if (pfcand->charge() == 0) {
+      neutralPFCands.push_back(pfcand);
+      drMinSvMap[pfcand];
+      double minDR = 0.8;
+      for (const auto &sv : *SVs){
+        double dr = reco::deltaR(*pfcand, sv);
+        if (dr < minDR) minDR = dr;
+      }
+      drMinSvMap[pfcand] = minDR;
+      sortedneutral.push_back(sorting::sortingClass<size_t>
+			      (i, -1,
+			       -minDR, pfcand->pt()/jet_uncorr_pt));
+      i++;
+    }
+  }
+
+  // sort by ABCInv
+  std::sort(sortedneutral.begin(),sortedneutral.end(),sorting::sortingClass<size_t>::compareByABCInv);
+  std::vector<size_t> sortedneutralindices;
+  sortedneutralindices=sorting::invertSortingVector(sortedneutral);
+
+  data.fill<int>("n_pfcands", neutralPFCands.size());
+  data.fill<float>("npfcands", neutralPFCands.size());
 
   float etasign = jet.eta()>0 ? 1 : -1;
 
-  for (const auto *pfcand : jetConstituents){
+
+  for (i = 0; i < neutralPFCands.size(); i++){
+
+    const auto *pfcand = neutralPFCands.at(sortedneutral.at(i).get());    
+    //  const auto *pfcand = neutralPFCands.at(i);
 
     if (pfcand->pt() < minPt_) continue;
-    nConstituents += 1;
     // basic kinematics, valid for both charged and neutral
     data.fillMulti<float>("pfcand_ptrel", pfcand->pt()/jet.pt());
     data.fillMulti<float>("pfcand_erel", pfcand->energy()/jet.energy());
@@ -79,12 +115,12 @@ bool PFCandidateFiller::fill(const pat::Jet& jet, size_t jetidx, const JetHelper
     data.fillMulti<float>("pfcand_puppiw", pfcand->puppiWeight());
     data.fillMulti<float>("pfcand_mass", pfcand->mass());
 
-    double minDR = 999;
+    double minDR = 0.8;
     for (const auto &sv : *SVs){
       double dr = reco::deltaR(*pfcand, sv);
       if (dr < minDR) minDR = dr;
     }
-    data.fillMulti<float>("pfcand_drminsv", minDR==999 ? -1 : minDR);
+    data.fillMulti<float>("pfcand_drminsv", catchInfsAndBound(drMinSvMap.at(pfcand),0,-0.8,0,-0.8));
 
     const auto& subjets = jet_helper.getSubJets();
     data.fillMulti<float>("pfcand_drsubjet1", subjets.size()>0 ? reco::deltaR(*pfcand, *subjets.at(0)) : -1);
@@ -118,9 +154,6 @@ bool PFCandidateFiller::fill(const pat::Jet& jet, size_t jetidx, const JetHelper
     }
 
   }
-  data.fill<int>("n_pfcands", nConstituents);
-  data.fill<float>("npfcands", nConstituents);
-
 
   return true;
 }

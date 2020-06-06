@@ -113,6 +113,19 @@ void FatJetInfoFiller::book() {
   //double-b
   data.add<float>("fj_doubleb", 0);
 
+  // DeepAK8, DDX 
+  data.add<float>("fj_DDBvL", 0);
+  data.add<float>("fj_DDCvL", 0);
+  data.add<float>("fj_DDCvB", 0);
+  data.add<float>("fj_DDBvL_mi", 0);
+  data.add<float>("fj_DDCvL_mi", 0);
+  data.add<float>("fj_DDCvB_mi", 0);
+
+  data.add<float>("fj_DeepAK8bbvslight_mi", 0);
+  data.add<float>("fj_DeepAK8ccvslight_mi", 0);
+  data.add<float>("fj_DeepAK8HbbvsQCD_mi", 0);
+  data.add<float>("fj_DeepAK8HccvsQCD_mi", 0);
+
   //flavor info
   data.add<int>("fj_isBB", 0);
   data.add<int>("fj_isNonBB", 0);
@@ -273,6 +286,17 @@ bool FatJetInfoFiller::fill(const pat::Jet& jet, size_t jetidx, const JetHelper&
   const auto &vars = bdsvTagInfo->taggingVariables();
 
   data.fill<float>("fj_doubleb", jet.bDiscriminator("pfBoostedDoubleSecondaryVertexAK8BJetTags"));
+  data.fill<float>("fj_DDBvL", jet.bDiscriminator("pfDeepDoubleBvLJetTags:probHbb"));
+  data.fill<float>("fj_DDCvL", jet.bDiscriminator("pfDeepDoubleCvLJetTags:probHcc"));
+  data.fill<float>("fj_DDCvB", jet.bDiscriminator("pfDeepDoubleCvBJetTags:probHcc"));
+  data.fill<float>("fj_DDBvL_mi", jet.bDiscriminator("pfMassIndependentDeepDoubleBvLJetTags:probHbb"));
+  data.fill<float>("fj_DDCvL_mi", jet.bDiscriminator("pfMassIndependentDeepDoubleCvLJetTags:probHcc"));
+  data.fill<float>("fj_DDCvB_mi", jet.bDiscriminator("pfMassIndependentDeepDoubleCvBJetTags:probHcc"));
+
+  data.fill<float>("fj_DeepAK8bbvslight_mi", jet.bDiscriminator("pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:bbvsLight"));
+  data.fill<float>("fj_DeepAK8ccvslight_mi", jet.bDiscriminator("pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ccvsLight"));
+  data.fill<float>("fj_DeepAK8HbbvsQCD_mi", jet.bDiscriminator("pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHbbvsQCD"));
+  data.fill<float>("fj_DeepAK8HccvsQCD_mi", jet.bDiscriminator("pfMassDecorrelatedDeepBoostedDiscriminatorsJetTags:ZHccvsQCD"));
 
   //flavor info
   data.fill<int>("fj_Hflavour", jet.hadronFlavour());  
